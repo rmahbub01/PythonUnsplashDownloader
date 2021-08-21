@@ -39,20 +39,19 @@ class Unsplash:
         with open(img_path, 'wb') as img:
             img.write(requests.request('GET', imgUrl,
                       headers=self.headers).content)
+            print('Saving Image:', path)
             img.close()
 
     def downloadImg(self):
 
-        for i in range(self.perpage+1):
-            response = self.getUrl()
-            for data in response['results']:
-                imgId = data['id']
-                imgUrl = data['urls'][self.quality]
-                imgName = self.downloadPath(imgId)
-                self.saveImg(imgUrl, imgName)
-            self.pages += 1
+        response = self.getUrl()
+        for data in response['results']:
+            imgId = data['id']
+            imgUrl = data['urls'][self.quality]
+            imgName = self.downloadPath(imgId)
+            self.saveImg(imgUrl, imgName)
 
 
-unsplash = Unsplash('cat', 5)
+unsplash = Unsplash('cat', 5, quality='thumb', pages=10)
 
 unsplash.downloadImg()
