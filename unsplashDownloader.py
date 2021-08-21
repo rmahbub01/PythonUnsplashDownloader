@@ -1,5 +1,8 @@
+import asyncio
 import os
+import time
 
+import aiofiles
 import requests
 
 
@@ -34,24 +37,21 @@ class Unsplash:
             os.mkdir(download_path)
         return f"{download_path}/{imgId}.jpeg"
 
-    def saveImg(self, imgUrl, path):
-        img_path = path
-        with open(img_path, 'wb') as img:
-            img.write(requests.request('GET', imgUrl,
-                      headers=self.headers).content)
-            print('Saving Image:', path)
-            img.close()
+    async def saveImg(self, imgUrl, path):
+        print('waiting', path)
+        async with aiofiles.open(path, mode='wb') as img:
+            await img.write(requests.request('GET', imgUrl,
+                                             headers=self.headers).content)
+            await img.flush()
+        print('done', path)
 
     def downloadImg(self):
 
         response = self.getUrl()
+        imgDict = {}
         for data in response['results']:
             imgId = data['id']
             imgUrl = data['urls'][self.quality]
             imgName = self.downloadPath(imgId)
-            self.saveImg(imgUrl, imgName)
-
-
-unsplash = Unsplash('cat', 5, quality='thumb', pages=10)
-
-unsplash.downloadImg()
+            imgDict.setdefault(imgName, imgUrl)
+        return imgDict
